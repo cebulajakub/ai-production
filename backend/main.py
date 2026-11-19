@@ -5,6 +5,9 @@ from inventory_service import get_shortages, get_shortages_summary, get_producti
 from orders_service import get_order_details, get_delayed_orders_list
 from pydantic import BaseModel, Field
 from llm_client import ask_llm_with_tool_execution
+import logging
+
+logger = logging.getLogger(__name__)
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
 
@@ -101,7 +104,10 @@ def chat_with_ai(request: ChatRequest):
     try:
         answer = ask_llm_with_tool_execution(request.message)
         return {"answer": answer}
+
     except Exception:
+        logger.exception("AI chat request failed")
+
         raise HTTPException(
             status_code=503,
             detail="AI service is temporarily unavailable"
