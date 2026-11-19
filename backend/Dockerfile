@@ -25,6 +25,6 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main.py database.py ./
+COPY main.py database.py inventory_repository.py inventory_service.py orders_repository.py orders_service.py llm_client.py ai_tools.py ./
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

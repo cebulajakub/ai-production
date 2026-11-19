@@ -1,6 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi import HTTPException
 from database import get_connection
+from inventory_service import get_shortages, get_shortages_summary, get_production_context, get_low_stock
+from orders_service import get_order_details, get_delayed_orders_list
+from pydantic import BaseModel, Field
+from llm_client import ask_llm_with_tool_execution
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
 
 app = FastAPI()
 
@@ -14,48 +20,89 @@ def health():
     
 
 @app.get("/inventory/shortages")
-def get_inventory_shortages():
-    query = """
-        SELECT
-            p.SKU,
-            p.Name AS ProductName,
-            SUM(oi.Quantity) AS TotalDemand,
-            i.QuantityOnHand,
-            SUM(oi.Quantity) - i.QuantityOnHand AS Shortage
-        FROM OrderItems oi
-        INNER JOIN Orders o
-            ON oi.OrderId = o.OrderId
-        INNER JOIN Products p
-            ON oi.ProductId = p.ProductId
-        INNER JOIN Inventory i
-            ON p.ProductId = i.ProductId
-        WHERE o.Status = 'Pending'
-        GROUP BY
-            p.SKU,
-            p.Name,
-            i.QuantityOnHand
-        HAVING SUM(oi.Quantity) > i.QuantityOnHand
-        ORDER BY Shortage DESC;
-    """
-
+def inventory_shortages():
     try:
-        with get_connection() as connection:
-            cursor = connection.cursor()
-            cursor.execute(query)
-
-            return [
-                {
-                    "sku": row.SKU,
-                    "product_name": row.ProductName,
-                    "total_demand": row.TotalDemand,
-                    "quantity_on_hand": row.QuantityOnHand,
-                    "shortage": row.Shortage,
-                }
-                for row in cursor.fetchall()
-            ]
-
+        return get_shortages()
     except Exception:
         raise HTTPException(
             status_code=500,
             detail="Database query failed"
+        )
+        
+@app.get("/inventory/summary")
+def inventory_summary():
+    try:
+        return get_shortages_summary()
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Database query failed"
+        )
+        
+@app.get("/ai/context")
+def ai_context():
+    try:
+        return get_production_context()
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve production context"
+        )
+        
+@app.get("/orders/delayed")
+def get_delayed_orders(
+    limit: int = Query(default=10, ge=1, le=100),
+    offset: int = Query(default=0, ge=0)
+):
+    try:
+        return get_delayed_orders_list(
+            limit=limit,
+            offset=offset
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve delayed orders"
+        )
+@app.get("/orders/{order_id}")
+def get_order(order_id: int):
+    try:
+        order = get_order_details(order_id)
+
+        if order is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Order not found"
+            )
+
+        return order
+
+    except HTTPException:
+        raise
+
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve order"
+        )
+
+@app.get("/inventory/low-stock")
+def get_inventory_low_stock():
+    try:
+        return get_low_stock()
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to retrieve low-stock products"
+        )
+        
+@app.post("/ai/chat")
+def chat_with_ai(request: ChatRequest):
+    try:
+        answer = ask_llm_with_tool_execution(request.message)
+        return {"answer": answer}
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="AI service is temporarily unavailable"
         )

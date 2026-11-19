@@ -26,7 +26,7 @@ def test_inventory_shortages_returns_data():
     fake_connection.__enter__.return_value = fake_connection
 
     # Podmieniamy get_connection w module main
-    with patch("main.get_connection", return_value=fake_connection):
+    with patch("inventory_repository.get_connection", return_value=fake_connection):
         response = client.get("/inventory/shortages")
 
     assert response.status_code == 200
@@ -37,6 +37,7 @@ def test_inventory_shortages_returns_data():
             "total_demand": 700,
             "quantity_on_hand": 500,
             "shortage": 200,
+            "severity": "MEDIUM"
         }
     ]
 
@@ -44,7 +45,7 @@ def test_inventory_shortages_returns_data():
     
 def test_inventory_database_error():
     with patch(
-        "main.get_connection",
+        "inventory_repository.get_connection",
         side_effect=Exception("Database unavailable")
     ):
         response = client.get("/inventory/shortages")
