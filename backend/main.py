@@ -4,7 +4,7 @@ from database import get_connection
 from inventory_service import get_shortages, get_shortages_summary, get_production_context, get_low_stock
 from orders_service import get_order_details, get_delayed_orders_list
 from pydantic import BaseModel, Field
-from llm_client import ask_llm_with_tool_execution
+from ai_service import get_ai_response
 import logging
 
 logger = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ def get_inventory_low_stock():
 @app.post("/ai/chat")
 def chat_with_ai(request: ChatRequest):
     try:
-        answer = ask_llm_with_tool_execution(request.message)
+        answer = get_ai_response(request.message)
         return {"answer": answer}
 
     except Exception:
