@@ -1,0 +1,10 @@
+Procedura kontroli jakości
+
+Każda partia produkcyjna podlega kontroli jakości przed
+przekazaniem do magazynu wyrobów gotowych.
+
+W przypadku wykrycia niezgodności produkt należy oznaczyć
+i odseparować od produktów zgodnych.
+
+Dział jakości podejmuje decyzję o ponownej kontroli,
+naprawie lub odrzuceniu partii.

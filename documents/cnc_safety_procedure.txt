@@ -1,0 +1,11 @@
+Procedura awarii maszyny CNC
+
+W przypadku awarii maszyny CNC operator musi natychmiast
+zatrzymać maszynę, zabezpieczyć stanowisko pracy i powiadomić
+dział utrzymania ruchu.
+
+Operator nie może samodzielnie naprawiać maszyny bez odpowiednich
+uprawnień.
+
+Ponowne uruchomienie maszyny jest możliwe po zatwierdzeniu
+przez dział utrzymania ruchu.

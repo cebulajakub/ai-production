@@ -1,0 +1,10 @@
+Procedura obsługi niedoborów magazynowych
+
+W przypadku wykrycia niedoboru materiałów magazynier
+powinien zgłosić problem do działu planowania produkcji.
+
+Planista produkcji sprawdza dostępność materiałów,
+terminy dostaw oraz wpływ niedoboru na realizację zamówień.
+
+Niedobory o wysokim priorytecie wymagają pilnej analizy
+i ustalenia działań korygujących.
