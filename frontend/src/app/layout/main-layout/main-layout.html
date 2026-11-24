@@ -1,0 +1,61 @@
+<div class="app-layout">
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      <span class="brand-name">AI Production</span>
+      <span class="brand-subtitle">COPILOT</span>
+    </div>
+
+    <nav class="navigation" aria-label="Main navigation">
+
+      @for (item of navigation; track item.path) {
+
+      <a [routerLink]="item.path" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-link">
+
+        {{ item.label }}
+
+      </a>
+
+      }
+
+    </nav>
+
+    <div class="sidebar-footer">
+      AI Production Copilot
+    </div>
+
+  </aside>
+
+  <div class="workspace">
+
+    <header class="topbar">
+      <span>Production Workspace</span>
+      <button type="button" class="api-status" [class.online]="apiStatus() === 'online'"
+        [class.offline]="apiStatus() === 'offline'" [class.checking]="apiStatus() === 'checking'"
+        (click)="checkApiHealth()" [disabled]="apiStatus() === 'checking'" title="Check API connection">
+
+        <span class="status-dot"></span>
+
+        @switch (apiStatus()) {
+        @case ('online') {
+        API Online
+        }
+        @case ('offline') {
+        API Offline
+        }
+        @case ('checking') {
+        Checking API...
+        }
+        }
+
+      </button>
+    </header>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+
+</div>
