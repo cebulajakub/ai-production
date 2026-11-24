@@ -219,6 +219,11 @@ The project implements several application-level safeguards:
 - System prompt instructions treating retrieved documents as untrusted data.
 - Generic API error responses.
 - Server-side exception logging.
+- Environment-based CORS configuration.
+- Typed API request and response contracts using Pydantic.
+- Centralized exception handling.
+- Safe HTTP error responses.
+- CORS headers on unhandled server error responses.
 
 These safeguards reduce operational risks but do not constitute a complete production security solution.
 
@@ -405,8 +410,8 @@ The current application uses demonstration manufacturing data and fictional inte
 
 ### Phase 3 — Angular Frontend & Full Stack Integration
 
-- [ ] Frontend-ready API contracts
-- [ ] CORS configuration
+- [x] Frontend-ready API contracts
+- [x] CORS configuration
 - [ ] Angular application architecture
 - [ ] AI chat interface
 - [ ] Production dashboard

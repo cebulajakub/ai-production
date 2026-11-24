@@ -5,8 +5,17 @@ from inventory_service import get_shortages, get_shortages_summary, get_producti
 from orders_service import get_order_details, get_delayed_orders_list
 from rag_service import answer_from_knowledge
 from pydantic import BaseModel, Field
+from exception_handlers import unhandled_exception_handler
 from ai_service import get_ai_response
 import logging
+from fastapi.middleware.cors import CORSMiddleware
+from config import CORS_ALLOWED_ORIGINS
+from schemas import (
+    ChatRequest,
+    ChatResponse,
+    KnowledgeResponse,
+    ErrorResponse
+)
 
 logger = logging.getLogger(__name__)
 
@@ -14,10 +23,12 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
 )
-class ChatRequest(BaseModel):
-    message: str = Field(min_length=1, max_length=2000)
 
 app = FastAPI()
+app.add_exception_handler(
+    Exception,
+    unhandled_exception_handler
+)
 
 
 @app.get("/health")
@@ -105,7 +116,13 @@ def get_inventory_low_stock():
             detail="Failed to retrieve low-stock products"
         )
         
-@app.post("/ai/chat")
+@app.post(
+    "/ai/chat",
+    response_model=ChatResponse,
+    responses={
+        503: {"model": ErrorResponse}
+    }
+)
 def chat_with_ai(request: ChatRequest):
     try:
         answer = get_ai_response(request.message)
@@ -119,7 +136,13 @@ def chat_with_ai(request: ChatRequest):
             detail="AI service is temporarily unavailable"
         )
         
-@app.post("/ai/knowledge")
+@app.post(
+    "/ai/knowledge",
+    response_model=KnowledgeResponse,
+    responses={
+        503: {"model": ErrorResponse}
+    }
+)
 def ask_knowledge(request: ChatRequest):
     try:
         return answer_from_knowledge(request.message)
@@ -129,3 +152,11 @@ def ask_knowledge(request: ChatRequest):
             status_code=503,
             detail="Knowledge service is temporarily unavailable"
         )
+        
+app = CORSMiddleware(
+    app=app,
+    allow_origins=CORS_ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"]
+)
