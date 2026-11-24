@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from database import get_connection
 from inventory_service import get_shortages, get_shortages_summary, get_production_context, get_low_stock
 from orders_service import get_order_details, get_delayed_orders_list
+from rag_service import answer_from_knowledge
 from pydantic import BaseModel, Field
 from ai_service import get_ai_response
 import logging
@@ -111,4 +112,15 @@ def chat_with_ai(request: ChatRequest):
         raise HTTPException(
             status_code=503,
             detail="AI service is temporarily unavailable"
+        )
+        
+@app.post("/ai/knowledge")
+def ask_knowledge(request: ChatRequest):
+    try:
+        return answer_from_knowledge(request.message)
+    except Exception:
+        logger.exception("RAG request failed")
+        raise HTTPException(
+            status_code=503,
+            detail="Knowledge service is temporarily unavailable"
         )

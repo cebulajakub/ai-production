@@ -12,7 +12,13 @@ services:
       DB_NAME: ProductionCopilotDB
       DB_USER: sa
       DB_PASSWORD: ${MSSQL_SA_PASSWORD}
+      EMBEDDING_MODEL: "bge-m3"
+      QDRANT_COLLECTION: "manufacturing_knowledge_v2"
+      RAG_TOP_K: "3"
+      RAG_SCORE_THRESHOLD: "0.50"
     restart: unless-stopped
+    volumes:
+      - ./documents:/app/documents:ro
 
   database:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -25,6 +31,15 @@ services:
     volumes:
       - sqlserver_data:/var/opt/mssql
     restart: unless-stopped
+  
+  qdrant:
+    image: qdrant/qdrant:v1.13.6
+    ports:
+      - "127.0.0.1:6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
 
 volumes:
   sqlserver_data:
+  qdrant_data:
