@@ -9,6 +9,11 @@ from ai_service import get_ai_response
 import logging
 
 logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+)
 class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
 
