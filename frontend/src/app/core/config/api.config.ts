@@ -1,3 +1,6 @@
-export const API_BASE_URL = 'http://localhost:8000';
+import { environment } from '../../../environments/environment';
 
-export const AI_REQUEST_TIMEOUT_MS = 300_000;
+export const API_BASE_URL = environment.apiBaseUrl;
+
+export const AI_REQUEST_TIMEOUT_MS =
+  environment.aiRequestTimeoutMs;

@@ -477,3 +477,47 @@ The local backend, RAG pipeline, and unified AI orchestration are implemented an
 The next development milestone is frontend readiness and Angular integration, followed by Azure DevOps automation and Microsoft Azure deployment.
 
 The project demonstrates practical AI Engineering skills, enterprise integration patterns, automated quality evaluation, and production-oriented application development.
+
+## Containerized Full Stack Deployment
+
+AI Production Copilot supports a local containerized deployment using Docker Compose.
+
+### Prerequisites
+
+- Docker Desktop
+- Ollama running on the host machine
+- Qwen3 8B model
+- BGE-M3 embedding model
+- Configured environment variables
+- Initialized SQL Server database
+- Initialized Qdrant collection and indexed documents
+
+### Build and Start
+
+```powershell
+docker compose up -d --build
+```
+
+### Application Endpoints
+
+| Service | URL |
+|---|---|
+| Web Application | http://localhost:8080 |
+| Frontend Health | http://localhost:8080/health |
+| Backend Health via Proxy | http://localhost:8080/api/health |
+| Backend Swagger | http://localhost:8000/docs |
+| Qdrant Dashboard | http://localhost:6333/dashboard |
+
+### Deployment Architecture
+
+The Angular application is built using a multi-stage Docker build and served by Nginx.
+
+Nginx forwards API requests to the FastAPI backend through the internal Docker network.
+
+SQL Server and Qdrant use persistent Docker volumes. Ollama runs on the host machine and provides local LLM inference and embeddings.
+
+The current release is intended for local development and demonstration purposes. Public production deployment requires additional security and infrastructure configuration.
+
+### Current Release
+
+**v0.1.0 — Local Full Stack MVP**
