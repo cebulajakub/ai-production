@@ -1,1 +1,315 @@
-<p>dashboard works!</p>
+<section class="dashboard-page">
+
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">PRODUCTION INTELLIGENCE</span>
+      <h1>Production Overview</h1>
+      <p>
+        Monitor material availability, production risks
+        and operational performance.
+      </p>
+    </div>
+
+    <div class="header-actions">
+      @if (lastUpdated(); as updated) {
+      <span class="last-updated">
+        Updated: {{ updated | date:'HH:mm:ss' }}
+      </span>
+      }
+
+      <button class="refresh-button" (click)="loadDashboard()" [disabled]="isLoading()">
+        <span [class.spinning]="isLoading()">↻</span>
+        {{ isLoading() ? 'Refreshing...' : 'Refresh data' }}
+      </button>
+    </div>
+  </header>
+
+  @if (error(); as errorMessage) {
+  <div class="error-banner" role="alert">
+    <div>
+      <strong>Unable to refresh dashboard</strong>
+      <p>{{ errorMessage }}</p>
+
+      @if (data()) {
+      <p>Displaying previously loaded data.</p>
+      }
+    </div>
+
+    <button (click)="loadDashboard()" [disabled]="isLoading()">
+      Try again
+    </button>
+  </div>
+  }
+
+  @if (isLoading() && !data()) {
+
+  <div class="loading-state" role="status">
+    <div class="spinner"></div>
+    <h2>Loading production data</h2>
+    <p>Connecting to production services...</p>
+  </div>
+
+  }
+
+  @if (data()) {
+
+  <div class="kpi-grid">
+
+    @for (kpi of kpis(); track kpi.label) {
+    <article class="kpi-card" [attr.data-color]="kpi.color">
+
+      <div class="kpi-header">
+        <span>{{ kpi.label }}</span>
+        <span class="kpi-icon">{{ kpi.icon }}</span>
+      </div>
+
+      <div class="kpi-value">
+        {{ kpi.value | number }}
+      </div>
+
+      <div class="kpi-description">
+        {{ kpi.description }}
+      </div>
+
+    </article>
+    }
+
+  </div>
+
+  <div class="analytics-grid">
+
+    <article class="panel">
+
+      <div class="panel-header">
+        <div>
+          <span class="eyebrow">INVENTORY ANALYTICS</span>
+          <h2>Material Shortages</h2>
+          <p>Current missing quantities by material</p>
+        </div>
+      </div>
+
+      <div class="bar-chart">
+
+        @for (item of shortages(); track item.sku) {
+
+        <div class="chart-item">
+
+          <div class="chart-label">
+            <span>{{ item.product_name }}</span>
+            <strong>{{ item.shortage | number }}</strong>
+          </div>
+
+          <div class="bar-track">
+            <div class="bar-fill" [attr.data-severity]="item.severity"
+              [style.width.%]="getShortagePercentage(item.shortage)">
+            </div>
+          </div>
+
+        </div>
+
+        } @empty {
+        <p class="empty-state">No material shortages found.</p>
+        }
+
+      </div>
+
+    </article>
+
+    <article class="panel">
+
+      <div class="panel-header">
+        <div>
+          <span class="eyebrow">RISK DISTRIBUTION</span>
+          <h2>Shortage Severity</h2>
+          <p>Materials grouped by priority</p>
+        </div>
+      </div>
+
+      <div class="severity-content">
+
+        <div class="donut-chart" [style.background]="severityGradient()">
+
+          <div class="donut-center">
+            <strong>
+              {{ summary()?.total_products_with_shortages }}
+            </strong>
+            <span>Materials</span>
+          </div>
+
+        </div>
+
+        <div class="chart-legend">
+
+          <div class="legend-item">
+            <span class="legend-dot high"></span>
+            <span>High priority</span>
+            <strong>{{ summary()?.high_priority }}</strong>
+          </div>
+
+          <div class="legend-item">
+            <span class="legend-dot medium"></span>
+            <span>Medium priority</span>
+            <strong>{{ summary()?.medium_priority }}</strong>
+          </div>
+
+          <div class="legend-item">
+            <span class="legend-dot low"></span>
+            <span>Low priority</span>
+            <strong>{{ summary()?.low_priority }}</strong>
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  </div>
+
+  <article class="panel">
+
+    <div class="panel-header">
+      <div>
+        <span class="eyebrow">MATERIAL AVAILABILITY</span>
+        <h2>Material Shortage Details</h2>
+        <p>Demand, available inventory and missing quantities</p>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+
+      <table>
+        <thead>
+          <tr>
+            <th>Material</th>
+            <th>SKU</th>
+            <th>Demand</th>
+            <th>Available</th>
+            <th>Shortage</th>
+            <th>Priority</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (item of shortages(); track item.sku) {
+          <tr>
+            <td class="material-name">{{ item.product_name }}</td>
+            <td class="muted">{{ item.sku }}</td>
+            <td>{{ item.total_demand | number }}</td>
+            <td>{{ item.quantity_on_hand | number }}</td>
+            <td class="shortage-value">
+              {{ item.shortage | number }}
+            </td>
+            <td>
+              <span class="severity-badge" [attr.data-severity]="item.severity">
+                {{ item.severity }}
+              </span>
+            </td>
+          </tr>
+          } @empty {
+          <tr>
+            <td colspan="6">No material shortages found.</td>
+          </tr>
+          }
+        </tbody>
+      </table>
+
+    </div>
+
+  </article>
+
+  <div class="analytics-grid">
+
+    <article class="panel">
+
+      <div class="panel-header">
+        <div>
+          <span class="eyebrow">DELIVERY RISKS</span>
+          <h2>Delayed Orders</h2>
+          <p>Orders returned by the delayed orders endpoint</p>
+        </div>
+      </div>
+
+      @for (order of delayedOrders(); track order.order_id) {
+
+      <div class="alert-row">
+
+        <div class="alert-icon amber">◷</div>
+
+        <div class="alert-details">
+          <strong>
+            Order #{{ order.order_id }} — {{ order.customer_name }}
+          </strong>
+          <span>
+            Expected: {{ order.expected_delivery_date }}
+          </span>
+        </div>
+
+        <span class="status-badge">{{ order.status }}</span>
+
+      </div>
+
+      } @empty {
+      <p class="empty-state">No delayed orders found.</p>
+      }
+
+    </article>
+
+    <article class="panel">
+
+      <div class="panel-header">
+        <div>
+          <span class="eyebrow">STOCK ALERTS</span>
+          <h2>Low Stock Materials</h2>
+          <p>Materials requiring inventory attention</p>
+        </div>
+      </div>
+
+      @for (item of lowStock(); track item.product_id) {
+
+      <div class="alert-row">
+
+        <div class="alert-icon blue">▤</div>
+
+        <div class="alert-details">
+          <strong>{{ item.product_name }}</strong>
+          <span>{{ item.sku }}</span>
+        </div>
+
+        <strong class="stock-value">
+          {{ item.quantity_on_hand | number }}
+        </strong>
+
+      </div>
+
+      } @empty {
+      <p class="empty-state">No low stock materials found.</p>
+      }
+
+    </article>
+
+  </div>
+
+  <article class="ai-panel">
+
+    <div class="ai-icon">✦</div>
+
+    <div class="ai-description">
+      <span class="eyebrow">AI-POWERED INTELLIGENCE</span>
+      <h2>AI Production Insights</h2>
+      <p>
+        Analyze material shortages, identify production risks
+        and explore company procedures using your AI assistant.
+      </p>
+    </div>
+
+    <a class="ai-button" routerLink="/ai-chat">
+      ✦ Analyze with AI
+      <span>→</span>
+    </a>
+
+  </article>
+
+  }
+
+</section>
