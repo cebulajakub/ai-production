@@ -1,1 +1,113 @@
-<p>ai-chat works!</p>
+<section class="chat-page">
+
+  <header class="page-header">
+    <h1>AI Production Assistant</h1>
+    <p>
+      Ask questions about production data and company knowledge.
+    </p>
+  </header>
+
+  <div class="chat-container">
+
+    <div #messagesContainer class="messages" role="log" aria-live="polite">
+
+      @if (messages().length === 0) {
+
+      <div class="empty-state">
+        <h2>How can I help you?</h2>
+
+        <p>
+          Ask about material shortages, production
+          or company procedures.
+        </p>
+      </div>
+
+      }
+
+      @for (message of messages(); track message.id) {
+
+      <article class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
+
+        <div class="message-author">
+          {{
+          message.role === 'user'
+          ? 'You'
+          : 'AI Production Copilot'
+          }}
+        </div>
+
+        @if (message.role === 'assistant') {
+
+        <div class="message-content markdown-content" [innerHTML]="message.content | markdown">
+        </div>
+
+        } @else {
+
+        <div class="message-content">
+          {{ message.content }}
+        </div>
+
+        }
+
+      </article>
+
+      }
+
+      @if (isLoading()) {
+
+      <div class="loading-message">
+        AI assistant is analyzing your question...
+      </div>
+
+      }
+
+    </div>
+
+    @if (error(); as errorMessage) {
+
+    <div class="error-message" role="alert">
+
+      <span>{{ errorMessage }}</span>
+
+      @if (failedMessage()) {
+
+      <button class="retry-button" type="button" (click)="retryMessage()" [disabled]="isLoading()">
+
+        Retry request
+
+      </button>
+
+      }
+
+    </div>
+
+    }
+
+    <form class="chat-form" (submit)="$event.preventDefault(); sendMessage()">
+
+      <textarea [formControl]="messageControl" placeholder="Ask a question..." aria-label="Your question"
+        maxlength="2000" rows="3"></textarea>
+
+      <div class="form-footer">
+
+        <span class="character-counter">
+          {{ messageControl.value.length }} / 2000
+        </span>
+
+        <button type="submit" [disabled]="
+            messageControl.invalid ||
+            !messageControl.value.trim() ||
+            isLoading()
+          ">
+
+          {{ isLoading() ? 'Processing...' : 'Send' }}
+
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</section>
