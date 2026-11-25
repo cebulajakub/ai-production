@@ -42,6 +42,18 @@ services:
       - qdrant_data:/qdrant/storage
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: ai-production-frontend:local
+    container_name: ai-production-frontend
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
 volumes:
   sqlserver_data:
   qdrant_data:
